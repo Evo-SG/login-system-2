@@ -42,7 +42,7 @@ public class UserController {
         AuthResponse authResponse = new AuthResponse();
 
         if (foundUser.isPresent() && foundUser.get().getPassword().equals(user.getPassword())) {
-            authResponse.setAccessToken(jwtUtil.generateToken(user));
+            authResponse.setAccessToken(jwtUtil.generateToken(foundUser.get()));
             authResponse.setSuccess(true);
             if (foundUser.get().getUsername().equals("admin")) {
                 authResponse.setRole("admin");

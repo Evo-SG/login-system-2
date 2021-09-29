@@ -6,20 +6,14 @@ export default function Login() {
     const history = useHistory();
 
     const onSubmit = async (values) => {
-        // const jwt = await axios.post('http://localhost:8080/authenticate', values);
         let jwt;
         try {
-            jwt = await axios.get(`http://localhost:8080/authenticate?username=${values.username}&password=${values.password}`)
+            jwt = await axios.post('http://localhost:8080/authenticate', values);
         } catch(err) {
-            alert("server failed")
-            return
-        }
-        localStorage.setItem('accessToken', jwt.data.accessToken);
-
-        if (jwt.status !== 200) {
             alert("wrong username or password");
             return
         }
+        localStorage.setItem('accessToken', jwt.data.accessToken);
 
         if (values.username === 'admin') {
             history.push('/admin')

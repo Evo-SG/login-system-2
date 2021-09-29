@@ -16,7 +16,7 @@ import java.util.function.Function;
 public class JwtUtil {
     public String generateToken(User userDetails) {
         Map<String, Object> claims = new HashMap<>();
-        claims.put("a", userDetails.getUsername());
+        claims.put("username", userDetails.getUsername());
         return Jwts
                 .builder()
                 .setClaims(claims)
@@ -40,7 +40,6 @@ public class JwtUtil {
 
     private <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         Claims claims = extractAllClaims(token);
-        System.out.println(claims.get("a"));
         return claimsResolver.apply(claims);
     }
 

@@ -7,7 +7,7 @@ export default function PrivateRoute({ children, permission, ...rest}) {
 
     if (token)
     {
-        role = jwt_decode(token).a.substr(4);
+        role = jwt_decode(token).username;
     }
 
     const auth = role === permission;
