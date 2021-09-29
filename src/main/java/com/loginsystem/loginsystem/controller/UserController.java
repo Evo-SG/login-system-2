@@ -16,6 +16,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Optional;
 
 @RestController
 public class UserController {
@@ -35,22 +36,24 @@ public class UserController {
         this.userRepository = userRepository;
     }
 
-    @GetMapping("/authenticate")
-    public AuthResponse authenticate(@RequestParam("username") String username, @RequestParam("password") String password) throws Exception {
-        try {
-            authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(username, password)
-            );
-        } catch (BadCredentialsException e) {
-            throw new Exception("Bad Credentials");
-        }
-
-        UserDetails userDetails = userDetailsService.loadUserByUsername(username);
+    @PostMapping("/authenticate")
+    public ResponseEntity authenticate(@RequestBody User user) throws Exception {
+        Optional<User> foundUser = userRepository.findByUsername(user.getUsername());
         AuthResponse authResponse = new AuthResponse();
-        authResponse.setAccessToken(jwtUtil.generateToken(userDetails));
-        authResponse.setSuccess(true);
 
-        return authResponse;
+        if (foundUser.isPresent() && foundUser.get().getPassword().equals(user.getPassword())) {
+            authResponse.setAccessToken(jwtUtil.generateToken(user));
+            authResponse.setSuccess(true);
+            if (foundUser.get().getUsername().equals("admin")) {
+                authResponse.setRole("admin");
+            } else {
+                authResponse.setRole("user");
+            }
+            return new ResponseEntity<>(authResponse , HttpStatus.OK);
+        } else {
+            authResponse.setSuccess(false);
+            return new ResponseEntity<>(authResponse , HttpStatus.UNAUTHORIZED);
+        }
     }
 
     @GetMapping("/hello")
@@ -61,20 +64,5 @@ public class UserController {
     @GetMapping("/")
     public List<User> index() {
         return userRepository.findAll();
-    }
-
-    @PostMapping("/user")
-    public ResponseEntity<UserResponse> login(@RequestBody User user) {
-        UserResponse userResponse = new UserResponse();
-        System.out.print("hi");
-        if (user.getUsername().equals("Admin")) {
-            userResponse.setMessage("Success");
-            userResponse.setSuccess(true);
-            return new ResponseEntity<>(userResponse , HttpStatus.OK);
-        } else {
-            userResponse.setSuccess(false);
-            userResponse.setMessage("FAILED");
-            return new ResponseEntity<>(userResponse , HttpStatus.BAD_REQUEST);
-        }
     }
 }
